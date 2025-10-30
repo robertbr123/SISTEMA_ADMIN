@@ -1,0 +1,22 @@
+{
+  "/login/page": "app/login/page.js",
+  "/dashboard/page": "app/dashboard/page.js",
+  "/api/admin/stats/route": "app/api/admin/stats/route.js",
+  "/page": "app/page.js",
+  "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
+  "/api/admin/rede/services/route": "app/api/admin/rede/services/route.js",
+  "/api/admin/rede/vlans/route": "app/api/admin/rede/vlans/route.js",
+  "/api/user/route": "app/api/user/route.js",
+  "/api/admin/rede/sites/route": "app/api/admin/rede/sites/route.js",
+  "/api/admin/rede/subnets/route": "app/api/admin/rede/subnets/route.js",
+  "/api/admin/rede/ips/route": "app/api/admin/rede/ips/route.js",
+  "/api/admin/rede/devices/route": "app/api/admin/rede/devices/route.js",
+  "/api/admin/plans/route": "app/api/admin/plans/route.js",
+  "/api/admin/proxmox/servers/route": "app/api/admin/proxmox/servers/route.js",
+  "/api/admin/proxmox/nodes/route": "app/api/admin/proxmox/nodes/route.js",
+  "/api/admin/proxmox/vms/route": "app/api/admin/proxmox/vms/route.js",
+  "/admin/page": "app/admin/page.js",
+  "/admin/virtualizacao/page": "app/admin/virtualizacao/page.js",
+  "/admin/planos/page": "app/admin/planos/page.js",
+  "/admin/rede/page": "app/admin/rede/page.js"
+}
