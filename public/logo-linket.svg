@@ -1,0 +1,15 @@
+<svg width="180" height="40" viewBox="0 0 180 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="180" y2="40" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ef4444" />
+      <stop offset="1" stop-color="#dc2626" />
+    </linearGradient>
+  </defs>
+  <!-- Chain link icon -->
+  <g transform="translate(4,5)">
+    <rect x="0" y="6" rx="6" width="34" height="12" stroke="url(#g)" stroke-width="3"/>
+    <rect x="22" y="0" rx="6" width="34" height="12" stroke="url(#g)" stroke-width="3"/>
+  </g>
+  <!-- Wordmark -->
+  <text x="70" y="27" font-family="Segoe UI, Roboto, Arial, sans-serif" font-size="22" font-weight="700" fill="#ef4444">Linket</text>
+</svg>
