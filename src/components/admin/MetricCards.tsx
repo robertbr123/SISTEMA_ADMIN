@@ -10,7 +10,8 @@ import {
   TrendingDown,
   Server,
   Wifi,
-  Shield
+  Shield,
+  Monitor
 } from 'lucide-react'
 
 interface MetricCardProps {
@@ -203,6 +204,59 @@ export function SystemUptimeCard({ value, change, changeLabel }: Omit<MetricCard
     <MetricCard
       title="Uptime do Sistema"
       value={`${Number(value).toFixed(1)}%`}
+      change={change}
+      changeLabel={changeLabel}
+      icon={<TrendingUp className="h-6 w-6" />}
+      color="green"
+    />
+  )
+}
+
+export function NetworkLoadCard({ value, change, changeLabel }: Omit<MetricCardProps, 'title' | 'icon' | 'color'>) {
+  return (
+    <MetricCard
+      title="Carga da Rede"
+      value={`${value}%`}
+      change={change}
+      changeLabel={changeLabel}
+      icon={<Activity className="h-6 w-6" />}
+      color="yellow"
+    />
+  )
+}
+
+// Componentes adicionais para infraestrutura
+export function NetworkDevicesCard({ value, change, changeLabel }: Omit<MetricCardProps, 'title' | 'icon' | 'color'>) {
+  return (
+    <MetricCard
+      title="Dispositivos de Rede"
+      value={String(value)}
+      change={change}
+      changeLabel={changeLabel}
+      icon={<Wifi className="h-6 w-6" />}
+      color="blue"
+    />
+  )
+}
+
+export function SecurityCard({ value, change, changeLabel }: Omit<MetricCardProps, 'title' | 'icon' | 'color'>) {
+  return (
+    <MetricCard
+      title="Status de Segurança"
+      value={`${value}%`}
+      change={change}
+      changeLabel={changeLabel}
+      icon={<Shield className="h-6 w-6" />}
+      color="green"
+    />
+  )
+}
+
+export function SystemHealthCard({ value, change, changeLabel }: Omit<MetricCardProps, 'title' | 'icon' | 'color'>) {
+  return (
+    <MetricCard
+      title="Saúde do Sistema"
+      value={`${value}%`}
       change={change}
       changeLabel={changeLabel}
       icon={<TrendingUp className="h-6 w-6" />}

@@ -46,7 +46,7 @@ export function ChartContainer({
       )}
       <div style={{ height: `${height}px` }}>
         <ResponsiveContainer width="100%" height="100%">
-          {children}
+          <>{children}</>
         </ResponsiveContainer>
       </div>
     </div>
@@ -228,6 +228,93 @@ export function SystemMonitorChart({ data, title, height }: ChartProps) {
           name="Rede %"
         />
       </LineChart>
+    </ChartContainer>
+  )
+}
+
+// Gráfico de atividade de rede
+export function NetworkActivityChart({ data, title, height }: ChartProps) {
+  return (
+    <ChartContainer title={title || "Atividade da Rede"} height={height}>
+      <AreaChart data={data}>
+        <defs>
+          <linearGradient id="colorTraffic" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/>
+            <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.1}/>
+          </linearGradient>
+        </defs>
+        <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+        <XAxis 
+          dataKey="day" 
+          tick={{ fontSize: 12, fill: '#9ca3af' }}
+          axisLine={false}
+        />
+        <YAxis 
+          tick={{ fontSize: 12, fill: '#9ca3af' }}
+          axisLine={false}
+          tickFormatter={(value) => `${value} GB`}
+        />
+        <Tooltip 
+          formatter={(value: number, name: string) => [
+            name === 'traffic' ? `${value} GB` : value, 
+            name === 'traffic' ? 'Tráfego' : 'Conexões'
+          ]}
+          labelStyle={{ color: '#f9fafb' }}
+          contentStyle={{ 
+            backgroundColor: '#1f2937', 
+            border: '1px solid #374151',
+            borderRadius: '8px',
+            color: '#f9fafb'
+          }}
+        />
+        <Area 
+          type="monotone" 
+          dataKey="traffic" 
+          stroke="#3b82f6" 
+          fillOpacity={1} 
+          fill="url(#colorTraffic)"
+          strokeWidth={2}
+        />
+        <Line 
+          type="monotone" 
+          dataKey="connections" 
+          stroke="#10b981" 
+          strokeWidth={2}
+        />
+      </AreaChart>
+    </ChartContainer>
+  )
+}
+
+// Gráfico de status do sistema
+export function SystemStatusChart({ data, title, height }: ChartProps) {
+  return (
+    <ChartContainer title={title || "Status dos Sistemas"} height={height}>
+      <PieChart>
+        <Pie
+          data={data}
+          cx="50%"
+          cy="50%"
+          labelLine={false}
+          label={({ name, percent }: any) => `${name} ${(percent * 100).toFixed(0)}%`}
+          outerRadius={80}
+          fill="#8884d8"
+          dataKey="value"
+        >
+          {data.map((entry, index) => (
+            <Cell key={`cell-${index}`} fill={entry.color} />
+          ))}
+        </Pie>
+        <Tooltip 
+          formatter={(value: number) => [value, 'Sistemas']}
+          contentStyle={{ 
+            backgroundColor: '#1f2937', 
+            border: '1px solid #374151',
+            borderRadius: '8px',
+            color: '#f9fafb'
+          }}
+        />
+      </PieChart>
     </ChartContainer>
   )
 }

@@ -13,17 +13,16 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
     }
 
-    // Buscar estatísticas básicas
+    // Buscar estatísticas de infraestrutura
     const [
       totalUsers, 
-      activeSubscriptions,
+      activeUsers, 
       recentUsers,
-      subscriptionsByPlan,
-      usersByStatus
+      usersByDay
     ] = await Promise.all([
-      // Estatísticas principais
+      // Estatísticas de usuários
       prisma.user.count(),
-      prisma.subscription.count({ where: { status: 'active' } }),
+      prisma.user.count(), // TODO: implementar lógica de usuários ativos quando campo lastLogin existir
       
       // Usuários recentes (últimos 7 dias)
       prisma.user.count({
@@ -34,82 +33,121 @@ export async function GET(request: NextRequest) {
         }
       }),
       
-      // Assinaturas por plano
-      prisma.subscription.groupBy({
-        by: ['planName'],
-        _count: { planName: true }
-      }),
-      
-      // Usuários por status de atividade
+      // Usuários por dia (últimos 7 dias)
       prisma.user.groupBy({
         by: ['createdAt'],
+        where: {
+          createdAt: {
+            gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+          }
+        },
         _count: { id: true }
       })
     ])
 
+    // Dados simulados de infraestrutura (TODO: implementar dados reais)
+    const mikrotikDevices = 5
+    const proxmoxServers = 3
+    const totalDomains = 24
+    const networkDevices = mikrotikDevices + proxmoxServers + 8
+
     // Processamento de dados para gráficos
-    const planDistribution = subscriptionsByPlan.map((plan: any) => ({
-      name: plan.planName,
-      value: plan._count.planName
-    }))
+    const networkActivity = generateNetworkActivity()
+    const weeklyUsers = processWeeklyUsers(usersByDay)
+    const systemStatus = [
+      { name: 'Mikrotik', status: 'online', count: mikrotikDevices, color: '#10b981' },
+      { name: 'Proxmox', status: 'online', count: proxmoxServers, color: '#3b82f6' },
+      { name: 'DNS', status: 'online', count: totalDomains, color: '#8b5cf6' },
+      { name: 'Network', status: 'online', count: networkDevices, color: '#f59e0b' }
+    ]
 
-    // Simular dados de infraestrutura (pode ser expandido com APIs reais)
-    const mikrotikDevices = 12 // Pode vir de API real do Mikrotik
-    const proxmoxServers = 3   // Pode vir de API real do Proxmox
-    const activeConnections = 156 // Conexões ativas
-    const domainCount = 45     // Domínios gerenciados
-    const networkDevices = 28  // Dispositivos de rede
-    const systemUptime = 99.8  // Uptime do sistema
-
-    // Gráfico de atividade por semana
-    const weeklyActivity = []
-    for (let i = 6; i >= 0; i--) {
-      const date = new Date(Date.now() - i * 24 * 60 * 60 * 1000)
-      const dayName = date.toLocaleDateString('pt-BR', { weekday: 'short' })
-      
-      weeklyActivity.push({
-        day: dayName,
-        connections: Math.floor(Math.random() * 50) + 20,
-        devices: Math.floor(Math.random() * 10) + 5
-      })
-    }
-
-    // Status dos serviços
-    const serviceStatus = [
-      { name: 'Mikrotik Online', value: mikrotikDevices - 1, color: '#10b981' },
-      { name: 'Mikrotik Offline', value: 1, color: '#ef4444' },
-      { name: 'Proxmox Ativo', value: proxmoxServers, color: '#3b82f6' },
-      { name: 'Domínios Ativos', value: domainCount, color: '#8b5cf6' }
+    const infrastructureHealth = [
+      { name: 'Online', value: 95, color: '#10b981' },
+      { name: 'Warning', value: 4, color: '#f59e0b' },
+      { name: 'Offline', value: 1, color: '#ef4444' }
     ]
 
     return NextResponse.json({
-      // Métricas principais
-      totalUsers,
-      activeSubscriptions,
-      recentUsers,
-      
-      // Infraestrutura
+      // Estrutura de infraestrutura esperada pelo dashboard
       infrastructure: {
         mikrotikDevices,
         proxmoxServers,
-        activeConnections,
-        domainCount,
         networkDevices,
-        systemUptime
+        domains: totalDomains,
+        systemUptime: 99.5,
+        networkLoad: 68,
+        securityScore: 94,
+        systemHealth: 97
       },
       
       // Dados para gráficos
-      weeklyActivity,
-      planDistribution,
-      serviceStatus,
+      networkActivity,
+      weeklyActivity: weeklyUsers,
+      systemStatus: infrastructureHealth,
+      systemPerformance: [
+        { time: '00:00', cpu: 25, memory: 45, network: 30 },
+        { time: '04:00', cpu: 30, memory: 48, network: 35 },
+        { time: '08:00', cpu: 55, memory: 65, network: 60 },
+        { time: '12:00', cpu: 70, memory: 75, network: 80 },
+        { time: '16:00', cpu: 65, memory: 70, network: 75 },
+        { time: '20:00', cpu: 45, memory: 55, network: 50 }
+      ],
       
-      // Métricas calculadas
-      averageDevicesPerUser: totalUsers > 0 ? (mikrotikDevices / totalUsers).toFixed(1) : 0,
-      systemHealth: systemUptime
+      // Métricas adicionais
+      totalUsers,
+      activeUsers,
+      recentUsers,
+      
+      // Status geral do sistema
+      overallHealth: {
+        mikrotik: 'online',
+        proxmox: 'online',
+        dns: 'online',
+        network: 'online'
+      }
     })
 
   } catch (error) {
     console.error('Error fetching admin stats:', error)
     return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 })
   }
+}
+
+function generateNetworkActivity() {
+  const days = []
+  for (let i = 6; i >= 0; i--) {
+    const date = new Date(Date.now() - i * 24 * 60 * 60 * 1000)
+    const dayName = date.toLocaleDateString('pt-BR', { weekday: 'short' })
+    
+    days.push({
+      day: dayName,
+      traffic: Math.floor(Math.random() * 1000) + 500, // GB
+      connections: Math.floor(Math.random() * 500) + 200,
+      uptime: 95 + Math.random() * 5 // 95-100%
+    })
+  }
+  return days
+}
+
+function processWeeklyUsers(userData: any[]) {
+  const days = []
+  for (let i = 6; i >= 0; i--) {
+    const date = new Date(Date.now() - i * 24 * 60 * 60 * 1000)
+    const dayName = date.toLocaleDateString('pt-BR', { weekday: 'short' })
+    
+    const dayUsers = userData
+      .filter(item => {
+        const itemDate = new Date(item.createdAt)
+        return itemDate.toDateString() === date.toDateString()
+      })
+      .reduce((sum, item) => sum + item._count.id, 0)
+    
+    days.push({
+      day: dayName,
+      devices: dayUsers + Math.floor(Math.random() * 5) + 10, // Simula dispositivos conectados
+      users: dayUsers,
+      active: Math.floor(dayUsers * 0.7) // estimativa de usuários ativos
+    })
+  }
+  return days
 }

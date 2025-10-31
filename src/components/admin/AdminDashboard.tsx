@@ -3,38 +3,37 @@
 import React, { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import {
-  UsersMetricCard,
-  RevenueMetricCard,
-  SubscriptionsMetricCard,
-  PlansMetricCard,
-  ConversionRateCard,
-  ServerMetricCard,
+  SystemUptimeCard,
   NetworkDevicesCard,
-  SecurityCard
+  SecurityCard,
+  DomainsCard,
+  MikrotikDevicesCard,
+  ProxmoxServersCard,
+  SystemHealthCard,
+  NetworkLoadCard
 } from '@/components/admin/MetricCards'
 import {
-  MonthlyRevenueChart,
-  PlanDistributionChart,
-  InvoiceStatusChart,
-  UserGrowthChart
+  WeeklyActivityChart,
+  SystemMonitorChart,
+  NetworkActivityChart,
+  SystemStatusChart
 } from '@/components/admin/Charts'
 
 interface DashboardStats {
-  totalUsers: number
-  totalPlans: number
-  activeSubscriptions: number
-  totalRevenue: number
-  recentUsers: number
-  averageRevenuePerUser: number
-  conversionRate: number
-  monthlyRevenue: Array<{ month: string; revenue: number }>
-  planDistribution: Array<{ name: string; value: number }>
-  invoiceStats: Array<{ name: string; value: number; color: string }>
   infrastructure: {
     mikrotikDevices: number
     proxmoxServers: number
     networkDevices: number
+    domains: number
+    systemUptime: number
+    networkLoad: number
+    securityScore: number
+    systemHealth: number
   }
+  networkActivity: Array<{ day: string; traffic: number; connections: number }>
+  systemPerformance: Array<{ time: string; cpu: number; memory: number; network: number }>
+  systemStatus: Array<{ name: string; value: number; color: string }>
+  weeklyActivity: Array<{ day: string; devices: number }>
 }
 
 export default function AdminDashboard() {
@@ -67,10 +66,10 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 p-6">
+      <div className="min-h-screen bg-gray-900 p-6">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400"></div>
           </div>
         </div>
       </div>
@@ -79,11 +78,11 @@ export default function AdminDashboard() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 p-6">
+      <div className="min-h-screen bg-gray-900 p-6">
         <div className="max-w-7xl mx-auto">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-            <h2 className="text-lg font-semibold text-red-800 mb-2">Erro</h2>
-            <p className="text-red-600">{error}</p>
+          <div className="bg-red-900 border border-red-700 rounded-lg p-6">
+            <h2 className="text-lg font-semibold text-red-300 mb-2">Erro</h2>
+            <p className="text-red-200">{error}</p>
             <button 
               onClick={fetchStats}
               className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
@@ -101,14 +100,14 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-900">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b border-gray-200">
+      <div className="bg-gray-800 shadow-sm border-b border-gray-700">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Dashboard Administrativo</h1>
-              <p className="text-gray-600 mt-1">Visão geral do sistema e métricas principais</p>
+              <h1 className="text-2xl font-bold text-white">Dashboard de Infraestrutura</h1>
+              <p className="text-gray-300 mt-1">Monitoramento em tempo real dos sistemas</p>
             </div>
             <div className="flex items-center space-x-4">
               <button 
@@ -117,7 +116,7 @@ export default function AdminDashboard() {
               >
                 Atualizar
               </button>
-              <div className="text-sm text-gray-500">
+              <div className="text-sm text-gray-400">
                 Última atualização: {new Date().toLocaleTimeString('pt-BR')}
               </div>
             </div>
@@ -126,105 +125,122 @@ export default function AdminDashboard() {
       </div>
 
       <div className="max-w-7xl mx-auto p-6">
-        {/* Métricas Principais */}
+        {/* Métricas Principais de Infraestrutura */}
         <section className="mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Métricas Principais</h2>
+          <h2 className="text-xl font-semibold text-white mb-4">Status da Infraestrutura</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <UsersMetricCard 
-              value={stats.totalUsers}
-              change={stats.recentUsers}
+            <MikrotikDevicesCard 
+              value={stats.infrastructure.mikrotikDevices}
+              change={2}
               changeLabel="novos esta semana"
             />
-            <RevenueMetricCard 
-              value={stats.totalRevenue}
-              change={12.5}
-              changeLabel="vs mês anterior"
-            />
-            <SubscriptionsMetricCard 
-              value={stats.activeSubscriptions}
-              change={8.2}
-              changeLabel="vs mês anterior"
-            />
-            <ConversionRateCard 
-              value={stats.conversionRate}
-              change={3.1}
-              changeLabel="vs mês anterior"
-            />
-          </div>
-        </section>
-
-        {/* Gráficos Principais */}
-        <section className="mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Análise de Receita</h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <MonthlyRevenueChart 
-              data={stats.monthlyRevenue}
-              title="Receita Mensal"
-              height={350}
-            />
-            <PlanDistributionChart 
-              data={stats.planDistribution}
-              title="Distribuição de Planos"
-              height={350}
-            />
-          </div>
-        </section>
-
-        {/* Métricas Secundárias */}
-        <section className="mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Infraestrutura</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <PlansMetricCard 
-              value={stats.totalPlans}
-            />
-            <ServerMetricCard 
+            <ProxmoxServersCard 
               value={stats.infrastructure.proxmoxServers}
+              change={0}
+              changeLabel="servidores online"
             />
-            <NetworkDevicesCard 
-              value={stats.infrastructure.mikrotikDevices}
+            <DomainsCard 
+              value={stats.infrastructure.domains}
+              change={5}
+              changeLabel="novos domínios"
+            />
+            <SystemUptimeCard 
+              value={stats.infrastructure.systemUptime}
+              change={0.1}
+              changeLabel="vs último mês"
+            />
+          </div>
+        </section>
+
+        {/* Gráficos de Monitoramento */}
+        <section className="mb-8">
+          <h2 className="text-xl font-semibold text-white mb-4">Monitoramento de Rede</h2>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <WeeklyActivityChart 
+              data={stats.weeklyActivity}
+              title="Atividade Semanal de Dispositivos"
+              height={350}
+            />
+            <NetworkActivityChart 
+              data={stats.networkActivity}
+              title="Tráfego de Rede"
+              height={350}
+            />
+          </div>
+        </section>
+
+        {/* Métricas de Performance */}
+        <section className="mb-8">
+          <h2 className="text-xl font-semibold text-white mb-4">Performance do Sistema</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <NetworkLoadCard 
+              value={stats.infrastructure.networkLoad}
+              change={-5.2}
+              changeLabel="vs hora anterior"
             />
             <SecurityCard 
+              value={stats.infrastructure.securityScore}
+              change={2.1}
+              changeLabel="score de segurança"
+            />
+            <SystemHealthCard 
+              value={stats.infrastructure.systemHealth}
+              change={1.5}
+              changeLabel="saúde geral"
+            />
+            <NetworkDevicesCard 
               value={stats.infrastructure.networkDevices}
+              change={3}
+              changeLabel="dispositivos conectados"
             />
           </div>
         </section>
 
         {/* Análise Detalhada */}
         <section className="mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Análise Detalhada</h2>
+          <h2 className="text-xl font-semibold text-white mb-4">Análise Detalhada</h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <InvoiceStatusChart 
-              data={stats.invoiceStats}
-              title="Status das Faturas"
+            <SystemStatusChart 
+              data={stats.systemStatus}
+              title="Status dos Sistemas"
               height={350}
             />
-            <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Resumo Financeiro</h3>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Receita Total</span>
-                  <span className="font-semibold text-green-600">
-                    R$ {stats.totalRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                  </span>
+            <SystemMonitorChart 
+              data={stats.systemPerformance}
+              title="Performance em Tempo Real"
+              height={350}
+            />
+          </div>
+        </section>
+
+        {/* Resumo da Infraestrutura */}
+        <section className="mb-8">
+          <div className="bg-gray-800 p-6 rounded-lg border border-gray-700 shadow-sm">
+            <h3 className="text-lg font-semibold text-white mb-4">Resumo da Infraestrutura</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-blue-400">
+                  {stats.infrastructure.mikrotikDevices}
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Receita por Usuário</span>
-                  <span className="font-semibold">
-                    R$ {stats.averageRevenuePerUser.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                  </span>
+                <div className="text-sm text-gray-400">Dispositivos Mikrotik</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-purple-400">
+                  {stats.infrastructure.proxmoxServers}
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Taxa de Conversão</span>
-                  <span className="font-semibold text-blue-600">
-                    {stats.conversionRate.toFixed(1)}%
-                  </span>
+                <div className="text-sm text-gray-400">Servidores Proxmox</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-green-400">
+                  {stats.infrastructure.domains}
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Assinaturas Ativas</span>
-                  <span className="font-semibold">
-                    {stats.activeSubscriptions} de {stats.totalUsers}
-                  </span>
+                <div className="text-sm text-gray-400">Domínios Gerenciados</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-yellow-400">
+                  {stats.infrastructure.systemUptime.toFixed(1)}%
                 </div>
+                <div className="text-sm text-gray-400">Uptime do Sistema</div>
               </div>
             </div>
           </div>
@@ -232,35 +248,35 @@ export default function AdminDashboard() {
 
         {/* Ações Rápidas */}
         <section>
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Ações Rápidas</h2>
+          <h2 className="text-xl font-semibold text-white mb-4">Ações Rápidas</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <a
-              href="/admin/usuarios"
-              className="p-4 bg-white border border-gray-200 rounded-lg hover:border-blue-300 hover:shadow-sm transition-all"
-            >
-              <h3 className="font-semibold text-gray-900 mb-2">Gerenciar Usuários</h3>
-              <p className="text-sm text-gray-600">Visualizar e gerenciar todos os usuários</p>
-            </a>
-            <a
-              href="/admin/planos"
-              className="p-4 bg-white border border-gray-200 rounded-lg hover:border-blue-300 hover:shadow-sm transition-all"
-            >
-              <h3 className="font-semibold text-gray-900 mb-2">Gerenciar Planos</h3>
-              <p className="text-sm text-gray-600">Criar e editar planos de assinatura</p>
-            </a>
-            <a
               href="/admin/mikrotik"
-              className="p-4 bg-white border border-gray-200 rounded-lg hover:border-blue-300 hover:shadow-sm transition-all"
+              className="p-4 bg-gray-800 border border-gray-700 rounded-lg hover:border-blue-500 hover:shadow-sm transition-all"
             >
-              <h3 className="font-semibold text-gray-900 mb-2">Dispositivos Mikrotik</h3>
-              <p className="text-sm text-gray-600">Monitorar e configurar dispositivos</p>
+              <h3 className="font-semibold text-white mb-2">Gerenciar Mikrotik</h3>
+              <p className="text-sm text-gray-400">Configurar dispositivos de rede</p>
             </a>
             <a
               href="/admin/virtualizacao"
-              className="p-4 bg-white border border-gray-200 rounded-lg hover:border-blue-300 hover:shadow-sm transition-all"
+              className="p-4 bg-gray-800 border border-gray-700 rounded-lg hover:border-purple-500 hover:shadow-sm transition-all"
             >
-              <h3 className="font-semibold text-gray-900 mb-2">Virtualização</h3>
-              <p className="text-sm text-gray-600">Gerenciar servidores Proxmox</p>
+              <h3 className="font-semibold text-white mb-2">Proxmox</h3>
+              <p className="text-sm text-gray-400">Gerenciar máquinas virtuais</p>
+            </a>
+            <a
+              href="/admin/dominios"
+              className="p-4 bg-gray-800 border border-gray-700 rounded-lg hover:border-green-500 hover:shadow-sm transition-all"
+            >
+              <h3 className="font-semibold text-white mb-2">Domínios</h3>
+              <p className="text-sm text-gray-400">Gerenciar domínios e DNS</p>
+            </a>
+            <a
+              href="/admin/rede"
+              className="p-4 bg-gray-800 border border-gray-700 rounded-lg hover:border-yellow-500 hover:shadow-sm transition-all"
+            >
+              <h3 className="font-semibold text-white mb-2">Rede</h3>
+              <p className="text-sm text-gray-400">Monitorar infraestrutura de rede</p>
             </a>
           </div>
         </section>
