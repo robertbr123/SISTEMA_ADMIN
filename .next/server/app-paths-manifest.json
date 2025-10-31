@@ -1,8 +1,22 @@
 {
   "/_not-found/page": "app/_not-found/page.js",
-  "/api/admin/stats/route": "app/api/admin/stats/route.js",
   "/dashboard/page": "app/dashboard/page.js",
+  "/login/page": "app/login/page.js",
   "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
+  "/api/admin/mikrotik/route": "app/api/admin/mikrotik/route.js",
+  "/api/admin/stats/route": "app/api/admin/stats/route.js",
+  "/api/admin/cloudflare/domains/route": "app/api/admin/cloudflare/domains/route.js",
+  "/api/admin/rede/sites/route": "app/api/admin/rede/sites/route.js",
+  "/api/admin/rede/vlans/route": "app/api/admin/rede/vlans/route.js",
+  "/api/admin/rede/devices/route": "app/api/admin/rede/devices/route.js",
+  "/api/admin/rede/subnets/route": "app/api/admin/rede/subnets/route.js",
+  "/api/admin/rede/services/route": "app/api/admin/rede/services/route.js",
+  "/api/admin/clientes/route": "app/api/admin/clientes/route.js",
+  "/api/admin/rede/ips/route": "app/api/admin/rede/ips/route.js",
   "/admin/page": "app/admin/page.js",
-  "/admin/virtualizacao/page": "app/admin/virtualizacao/page.js"
+  "/admin/mikrotik/page": "app/admin/mikrotik/page.js",
+  "/admin/clientes/page": "app/admin/clientes/page.js",
+  "/admin/dominios/page": "app/admin/dominios/page.js",
+  "/admin/rede/page": "app/admin/rede/page.js",
+  "/admin/mikrotik/dispositivos/page": "app/admin/mikrotik/dispositivos/page.js"
 }
