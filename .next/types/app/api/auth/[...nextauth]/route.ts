@@ -1,4 +1,4 @@
-// File: C:\Users\ontec\Videos\SISTEMA\src\app\api\auth\[...nextauth]\route.ts
+// File: C:\Users\ontec\Videos\github\SISTEMA_ADMIN\src\app\api\auth\[...nextauth]\route.ts
 import * as entry from '../../../../../../src/app/api/auth/[...nextauth]/route.js'
 import type { NextRequest } from 'next/server.js'
 

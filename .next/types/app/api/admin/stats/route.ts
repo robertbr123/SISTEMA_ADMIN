@@ -1,4 +1,4 @@
-// File: C:\Users\ontec\Videos\SISTEMA\src\app\api\admin\stats\route.ts
+// File: C:\Users\ontec\Videos\github\SISTEMA_ADMIN\src\app\api\admin\stats\route.ts
 import * as entry from '../../../../../../src/app/api/admin/stats/route.js'
 import type { NextRequest } from 'next/server.js'
 
