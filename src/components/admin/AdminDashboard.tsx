@@ -1,6 +1,7 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React from 'react'
+import useSWR from 'swr'
 import { useSession } from 'next-auth/react'
 import {
   SystemUptimeCard,
@@ -19,58 +20,31 @@ import {
   SystemStatusChart
 } from '@/components/admin/Charts'
 
-interface DashboardStats {
-  infrastructure: {
-    mikrotikDevices: number
-    proxmoxServers: number
-    networkDevices: number
-    domains: number
-    systemUptime: number
-    networkLoad: number
-    securityScore: number
-    systemHealth: number
-  }
-  networkActivity: Array<{ day: string; traffic: number; connections: number }>
-  systemPerformance: Array<{ time: string; cpu: number; memory: number; network: number }>
-  systemStatus: Array<{ name: string; value: number; color: string }>
-  weeklyActivity: Array<{ day: string; devices: number }>
+import type { DashboardStats } from '@/types/dashboard'
+import { GridSkeleton, ChartsRowSkeleton } from '@/components/admin/Skeletons'
+import { HealthBadge } from '@/components/admin/HealthBadge'
+
+const fetcher = async (url: string): Promise<DashboardStats> => {
+  const res = await fetch(url)
+  if (!res.ok) throw new Error('Erro ao carregar estatísticas')
+  return res.json()
 }
 
 export default function AdminDashboard() {
   const { data: session } = useSession()
-  const [stats, setStats] = useState<DashboardStats | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { data: stats, error, isLoading, mutate } = useSWR<DashboardStats>(
+    '/api/admin/stats',
+    fetcher,
+    { refreshInterval: 10000, revalidateOnFocus: true }
+  )
 
-  useEffect(() => {
-    fetchStats()
-  }, [])
-
-  const fetchStats = async () => {
-    try {
-      setLoading(true)
-      const response = await fetch('/api/admin/stats')
-      
-      if (!response.ok) {
-        throw new Error('Erro ao carregar estatísticas')
-      }
-      
-      const data = await response.json()
-      setStats(data)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro desconhecido')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-900 p-6">
         <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400"></div>
-          </div>
+          <GridSkeleton />
+          <div className="h-6" />
+          <ChartsRowSkeleton />
         </div>
       </div>
     )
@@ -84,7 +58,7 @@ export default function AdminDashboard() {
             <h2 className="text-lg font-semibold text-red-300 mb-2">Erro</h2>
             <p className="text-red-200">{error}</p>
             <button 
-              onClick={fetchStats}
+              onClick={() => mutate()}
               className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
             >
               Tentar Novamente
@@ -111,7 +85,7 @@ export default function AdminDashboard() {
             </div>
             <div className="flex items-center space-x-4">
               <button 
-                onClick={fetchStats}
+                onClick={() => mutate()}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
                 Atualizar
@@ -242,6 +216,12 @@ export default function AdminDashboard() {
                 </div>
                 <div className="text-sm text-gray-400">Uptime do Sistema</div>
               </div>
+            </div>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <HealthBadge label={`Mikrotik: ${stats.overallHealth.mikrotik}`} status={stats.overallHealth.mikrotik} />
+              <HealthBadge label={`Proxmox: ${stats.overallHealth.proxmox}`} status={stats.overallHealth.proxmox} />
+              <HealthBadge label={`DNS: ${stats.overallHealth.dns}`} status={stats.overallHealth.dns} />
+              <HealthBadge label={`Rede: ${stats.overallHealth.network}`} status={stats.overallHealth.network} />
             </div>
           </div>
         </section>
